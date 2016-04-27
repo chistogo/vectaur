@@ -541,48 +541,42 @@ draw.addClearingTool("Fence", "3D Tools", function(){
 	}
 });
 
-draw.addClearingTool("Girder", "3D Tools", function(){
+draw.addClearingTool("Duct", "3D Tools", function(){
 	if (draw.pencil.active){
 		draw.appendCurrentVector({x: draw.pencil.xpos, y: draw.pencil.ypos});
 		draw.mostRecent();
 	} else if (draw.pencil.xmove || draw.pencil.ymove){
         var As=[], Bs=[], Cs=[], Ds=[];
-        var prev=false, prevprev=false;
+        var prev=false;
         var size = 20;
 		draw.iterateCurrentVector(function(point){
-            if (prevprev){
-                var mid = {
-                    x: .5*point.x + .5*prevprev.x,
-                    y: .5*point.y + .5*prevprev.y
+            if (prev){
+                var prev2point = {
+                    x: point.x - prev.x,
+                    y: point.y - prev.y
                 };
-                var prev2mid = {
-                    x: mid.x - prev.x,
-                    y: mid.y - prev.y
-                };
-                // size = Math.sqrt(t*prev2mid.x*t*prev2mid.x + t*prev2mid.y*t*prev2mid.y)
-                // size*size = t*prev2mid.x*t*prev2mid.x + t*prev2mid.y*t*prev2mid.y
-                // size*size = t*t*(prev2mid.x*prev2mid.x + prev2mid.y*prev2mid.y)
-                // size*size/(prev2mid.x*prev2mid.x + prev2mid.y*prev2mid.y) = t*t
-                // Math.sqrt(size*size/(prev2mid.x*prev2mid.x + prev2mid.y*prev2mid.y)) = t
-                var t = Math.sqrt(size*size/(prev2mid.x*prev2mid.x + prev2mid.y*prev2mid.y));
+                var perp = {x: prev2point.y, y: -prev2point.x};
+                // size = Math.sqrt(t*perp.x*t*perp.x + t*perp.y*t*perp.y)
+                // size*size = t*perp.x*t*perp.x + t*perp.y*t*perp.y
+                // size*size = t*t*(perp.x*perp.x + perp.y*perp.y)
+                // size*size/(perp.x*perp.x + perp.y*perp.y) = t*t
+                // Math.sqrt(size*size/(perp.x*perp.x + perp.y*perp.y)) = t
+                var t = Math.sqrt(size*size/(perp.x*perp.x + perp.y*perp.y));
                 var plus = {
-                    x: prev.x + t*prev2mid.x,
-                    y: prev.y + t*prev2mid.y
+                    x: prev.x + t*perp.x,
+                    y: prev.y + t*perp.y
                 };
                 var minus = {
-                    x: prev.x - t*prev2mid.x,
-                    y: prev.y - t*prev2mid.y
+                    x: prev.x - t*perp.x,
+                    y: prev.y - t*perp.y
                 };
                 As.push({x:plus.x, y:plus.y, z:size});
                 Bs.push({x:plus.x, y:plus.y, z:-size});
                 Cs.push({x:minus.x, y:minus.y, z:-size});
                 Ds.push({x:minus.x, y:minus.y, z:size});
             }
-            prevprev = prev;
             prev = point;
 		});
-        
-        console.log(As, Bs, Cs, Ds);
         
         draw.resetCurrentVector();
         for (var i=0; i < As.length; ++i){ // base line
@@ -595,7 +589,7 @@ draw.addClearingTool("Girder", "3D Tools", function(){
             draw.appendCurrentVector(Bs[i]);
         }
         
-        /*for (var i=0; i < Cs.length; ++i){ // comb C on top of B
+        for (var i=0; i < Cs.length; ++i){ // comb C on top of B
             draw.appendCurrentVector(Cs[i]);
             draw.appendCurrentVector(Bs[i]);
             draw.appendCurrentVector(Cs[i]);
@@ -605,7 +599,13 @@ draw.addClearingTool("Girder", "3D Tools", function(){
             draw.appendCurrentVector(Ds[i]);
             draw.appendCurrentVector(Cs[i]);
             draw.appendCurrentVector(Ds[i]);
-        }*/
+        }
+        
+        for (var i=0; i < Cs.length; ++i){ // comb A on top of D
+            draw.appendCurrentVector(As[i]);
+            draw.appendCurrentVector(Ds[i]);
+            draw.appendCurrentVector(As[i]);
+        }
 		
 		draw.commitCurrentVector();
 		draw.resetCurrentVector();
