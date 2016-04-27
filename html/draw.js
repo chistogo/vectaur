@@ -593,7 +593,7 @@ draw.addClearingTool("Girder", "3D Tools", function(){
             draw.appendCurrentVector(Bs[i]);
         }
         
-        for (var i=0; i < Cs.length-1; ++i){ // comb C on top of B
+        /*for (var i=0; i < Cs.length; ++i){ // comb C on top of B
             draw.appendCurrentVector(Cs[i]);
             draw.appendCurrentVector(Bs[i]);
             draw.appendCurrentVector(Cs[i]);
@@ -603,7 +603,7 @@ draw.addClearingTool("Girder", "3D Tools", function(){
             draw.appendCurrentVector(Ds[i]);
             draw.appendCurrentVector(Cs[i]);
             draw.appendCurrentVector(Ds[i]);
-        }
+        }*/
 		
 		draw.commitCurrentVector();
 		draw.resetCurrentVector();
