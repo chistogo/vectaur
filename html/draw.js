@@ -541,12 +541,6 @@ draw.addClearingTool("Fence", "3D Tools", function(){
 	}
 });
 
-// TODO girder
-// calculate corners for each point
-// draw A corners
-// comb in reverse along B corners
-// etc.
-
 draw.addClearingTool("Girder", "3D Tools", function(){
 	if (draw.pencil.active){
 		draw.appendCurrentVector({x: draw.pencil.xpos, y: draw.pencil.ypos});
