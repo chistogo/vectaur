@@ -232,7 +232,6 @@ var draw = (function(){
 		}
 	}
 	
-	// TODO take projection into account
 	function selectWithin(minx, miny, maxx, maxy){
 		selection = [];
 		var dirty = false;
@@ -547,6 +546,77 @@ draw.addClearingTool("Fence", "3D Tools", function(){
 // draw A corners
 // comb in reverse along B corners
 // etc.
+
+draw.addClickTool("Girder", "3D Tools", function(){
+	if (draw.pencil.active){
+		draw.appendCurrentVector({x: draw.pencil.xpos, y: draw.pencil.ypos});
+		draw.mostRecent();
+	} else if (draw.pencil.xmove || draw.pencil.ymove){
+        var As=[], Bs=[], Cs=[], Ds=[];
+        var prev=false, prevprev=false;
+        var size = 20;
+		draw.iterateCurrentVector(function(point){
+            if (prevprev){
+                var mid = {
+                    x: .5*point.x + .5*prevprev.x,
+                    y: .5*point.y + .5*prevprev.y
+                };
+                var prev2mid = {
+                    x: mid.x - prev.x,
+                    y: mid.y - prev.y
+                };
+                // size = Math.sqrt(t*prev2mid.x*t*prev2mid.x + t*prev2mid.y*t*prev2mid.y)
+                // size*size = t*prev2mid.x*t*prev2mid.x + t*prev2mid.y*t*prev2mid.y
+                // size*size = t*t*(prev2mid.x*prev2mid.x + prev2mid.y*prev2mid.y)
+                // size*size/(prev2mid.x*prev2mid.x + prev2mid.y*prev2mid.y) = t*t
+                // Math.sqrt(size*size/(prev2mid.x*prev2mid.x + prev2mid.y*prev2mid.y)) = t
+                var t = Math.sqrt(size*size/(prev2mid.x*prev2mid.x + prev2mid.y*prev2mid.y));
+                var plus = {
+                    x: prev.x + t*prev2mid.x,
+                    y: prev.y + t*prev2mid.y
+                };
+                var minus = {
+                    x: prev.x - t*prev2mid.x,
+                    y: prev.y - t*prev2mid.y
+                };
+                As.push({x:plus.x, y:plus.y, z:size});
+                Bs.push({x:plus.x, y:plus.y, z:-size});
+                Cs.push({x:minus.x, y:minus.y, z:-size});
+                Ds.push({x:minus.x, y:minus.y, z:size});
+            }
+            prevprev = prev;
+            prev = point;
+		});
+        
+        draw.resetCurrentVector();
+        for (var i=0; i < As.length; ++i){ // base line
+            draw.appendCurrentVector(As[i]);
+        }
+        
+        for (var i=Bs.length-1; i >= 0; --i){ // comb B on top of A
+            draw.appendCurrentVector(Bs[i]);
+            draw.appendCurrentVector(As[i]);
+            draw.appendCurrentVector(Bs[i]);
+        }
+        
+        for (var i=0; i < Cs.length-1; ++i){ // comb C on top of B
+            draw.appendCurrentVector(Cs[i]);
+            draw.appendCurrentVector(Bs[i]);
+            draw.appendCurrentVector(Cs[i]);
+        }
+        
+        for (var i=Ds.length-1; i >= 0; --i){ // comb D on top of C
+            draw.appendCurrentVector(Ds[i]);
+            draw.appendCurrentVector(Cs[i]);
+            draw.appendCurrentVector(Ds[i]);
+        }
+		
+		draw.commitCurrentVector();
+		draw.resetCurrentVector();
+		draw.clear();
+		draw.redraw();
+	}
+});
 
 draw.addRegularTool("Rotate Z", "3D Tools", function(){
 	draw.resetCurrentVector(); // clean up for multitouch
