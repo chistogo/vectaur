@@ -582,6 +582,8 @@ draw.addClearingTool("Girder", "3D Tools", function(){
             prev = point;
 		});
         
+        console.log(As, Bs, Cs, Ds);
+        
         draw.resetCurrentVector();
         for (var i=0; i < As.length; ++i){ // base line
             draw.appendCurrentVector(As[i]);
