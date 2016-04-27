@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<!-- Bryan A. Knowles -->
+<style>
+	body, html {
+		padding: 0;
+		margin: 0;
+		background: #888;
+		float: left;
+	}
+	
+	canvas {
+		float: left;
+	}
+	
+	#buttons {
+		float: right;
+		position: absolute;
+		top: 0;
+		right: 0;
+		font-family: arial;
+		font-size: 8pt;
+		text-align: center;
+		overflow-y: auto;
+		height: 100%;
+		width: 75px;
+	}
+	
+	#buttons a {
+		float: right;
+		width: 60px;
+		height: 40px;
+		clear: right;
+		background: #eee;
+		border-radius: 4px;
+		box-shadow: 0 0 1px black inset;
+		line-height: 40px;
+		text-decoration: none;
+		color: black;
+	}
+	
+	#buttons p {
+		width: 60px;
+		height: 30px;
+		float: right;
+		line-height: 30px;
+		clear: right;
+		margin: 0;
+		padding: 0;
+	}
+	
+	#buttons a:target {
+		background: lightblue;
+	}
+	
+	#tip {
+		position: fixed;
+		background: #eee;
+		bottom: 0;
+		right: 0;
+		font-family: arial;
+		font-size: 8pt;
+		text-align: center;
+		border-radius: 4px 0 0 0;
+		box-shadow: 0 0 1px black inset;
+		line-height: 20px;
+		padding: 0 2px;
+		text-decoration: none;
+		color: black;
+	}
+</style>
+<div id="buttons"></div>
+<div id="tip"></div>
+<canvas id="canvas" width="1200" height="650"></canvas>
+<script src="webgl-helpers.js"></script>
+<script src="draw.js"></script>
