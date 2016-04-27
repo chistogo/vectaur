@@ -578,11 +578,7 @@ draw.addClearingTool("Duct", "3D Tools", function(){
             prev = point;
 		});
         
-        draw.resetCurrentVector();
-        for (var i=0; i < As.length; ++i){ // base line
-            draw.appendCurrentVector(As[i]);
-        }
-        
+        draw.resetCurrentVector();        
         for (var i=Bs.length-1; i >= 0; --i){ // comb B on top of A
             draw.appendCurrentVector(Bs[i]);
             draw.appendCurrentVector(As[i]);
