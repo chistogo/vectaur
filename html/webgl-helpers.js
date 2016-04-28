@@ -204,21 +204,16 @@ function normalizeYRelativePoints(gl, points){
 }
 
 // Sets Z to zero after scaling XY appropriately
-// the "eye" is at (refx, refy, refz) and the perspective
-// is at (refx, refy, -refz); if point.z == 0, then no
-// scaling is applied
+// the "eye" is at (refx, refy, refz); if point.z == 0,
+// then no scaling is applied
 function projectedXYPoint(gl, point, refx, refy, refz){
-	var vector = [point.x-refx, point.y-refy, point.z-(-refz)];
-	var t = 0;
-	if (point.z >= refz){
-		t = Infinity;
-	} else if (point.z <= -refz){
-		t = 0;
-	} else {
-		t = (point.z-(-refz))/(0-(-refz));
-	}
-	return {z:0, x:refx+t*vector[0], y:refy+t*vector[1], w:point.w};
-	// return {z:0, x:point.x, y:refy+t*vector[1], w:point.w};
+	var vector = [point.x-refx, point.y-refy, point.z-refz];
+	var t = Infinity;
+    if (point.z < refz){
+        t = refz / vector[2];
+    }
+    var pp = {z:0, x:refx-t*vector[0], y:refy-t*vector[1]};
+    return pp;
 }
 
 // List version of projectedXYPoint
