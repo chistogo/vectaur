@@ -279,22 +279,37 @@ var draw = (function(){
 		points = projectedXYPoints(gl, points, pencil.xref, pencil.yref, pencil.eye);
 		points = normalizeAbsolutePoints(gl, points);
 		drawLineRgba(gl, points, 0.8, 0.8, 0.8, 1);
+		var all_points = [];
 		for (var i in vectors){
 			points = vectors[i];
 			points = fill4DPoints(points);
 			points = projectedXYPoints(gl, points, pencil.xref, pencil.yref, pencil.eye);
 			points = normalizeAbsolutePoints(gl, points);
-			drawLineStripRgba(gl, points, 0, 0, 0, 1);
+			all_points = all_points.concat(points);
+			all_points.push({x: Infinity, y: Infinity, z: Infinity});
+			if (all_points.length >= 3000){
+				drawLineStripRgba(gl, all_points, 0, 0, 0, 1);
+				all_points = [];
+			}
 		}
 		
+		drawLineStripRgba(gl, all_points, 0, 0, 0, 1);
 		if (selection){
+			all_points = [];
 			for (var i in selection){
 				points = selection[i];
 				points = fill4DPoints(points);
 				points = projectedXYPoints(gl, points, pencil.xref, pencil.yref, pencil.eye);
 				points = normalizeAbsolutePoints(gl, points);
-				drawLineStripRgba(gl, points, 1, 0, 0, 1);
+				all_points = all_points.concat(points);
+				all_points.push({x: Infinity, y: Infinity, z: Infinity});
+				if (all_points.length >= 3000){
+					drawLineStripRgba(gl, all_points, 1, 0, 0, 1);
+					all_points = [];
+				}
 			}
+			
+			drawLineStripRgba(gl, all_points, 1, 0, 0, 1);
 		}
 	}
 	
@@ -546,67 +561,67 @@ draw.addClearingTool("Duct", "3D Tools", function(){
 		draw.appendCurrentVector({x: draw.pencil.xpos, y: draw.pencil.ypos});
 		draw.mostRecent();
 	} else if (draw.pencil.xmove || draw.pencil.ymove){
-        var As=[], Bs=[], Cs=[], Ds=[];
-        var prev=false;
-        var size = 20;
+		var As=[], Bs=[], Cs=[], Ds=[];
+		var prev=false;
+		var size = 20;
 		draw.iterateCurrentVector(function(point){
-            if (prev){
-                var dist = Math.sqrt((point.x-prev.x)*(point.x-prev.x) + (point.y-prev.y)*(point.y-prev.y));
-                if (dist >= size/2){
-                    var prev2point = {
-                        x: point.x - prev.x,
-                        y: point.y - prev.y
-                    };
-                    var perp = {x: prev2point.y, y: -prev2point.x};
-                    // size = Math.sqrt(t*perp.x*t*perp.x + t*perp.y*t*perp.y)
-                    // size*size = t*perp.x*t*perp.x + t*perp.y*t*perp.y
-                    // size*size = t*t*(perp.x*perp.x + perp.y*perp.y)
-                    // size*size/(perp.x*perp.x + perp.y*perp.y) = t*t
-                    // Math.sqrt(size*size/(perp.x*perp.x + perp.y*perp.y)) = t
-                    var t = Math.sqrt(size*size/(perp.x*perp.x + perp.y*perp.y));
-                    var plus = {
-                        x: prev.x + t*perp.x,
-                        y: prev.y + t*perp.y
-                    };
-                    var minus = {
-                        x: prev.x - t*perp.x,
-                        y: prev.y - t*perp.y
-                    };
-                    As.push({x:plus.x, y:plus.y, z:size});
-                    Bs.push({x:plus.x, y:plus.y, z:-size});
-                    Cs.push({x:minus.x, y:minus.y, z:-size});
-                    Ds.push({x:minus.x, y:minus.y, z:size});
-                    prev = point;
-                }
-            } else {
-                prev = point;
-            }
+			if (prev){
+				var dist = Math.sqrt((point.x-prev.x)*(point.x-prev.x) + (point.y-prev.y)*(point.y-prev.y));
+				if (dist >= size/2){
+					var prev2point = {
+						x: point.x - prev.x,
+						y: point.y - prev.y
+					};
+					var perp = {x: prev2point.y, y: -prev2point.x};
+					// size = Math.sqrt(t*perp.x*t*perp.x + t*perp.y*t*perp.y)
+					// size*size = t*perp.x*t*perp.x + t*perp.y*t*perp.y
+					// size*size = t*t*(perp.x*perp.x + perp.y*perp.y)
+					// size*size/(perp.x*perp.x + perp.y*perp.y) = t*t
+					// Math.sqrt(size*size/(perp.x*perp.x + perp.y*perp.y)) = t
+					var t = Math.sqrt(size*size/(perp.x*perp.x + perp.y*perp.y));
+					var plus = {
+						x: prev.x + t*perp.x,
+						y: prev.y + t*perp.y
+					};
+					var minus = {
+						x: prev.x - t*perp.x,
+						y: prev.y - t*perp.y
+					};
+					As.push({x:plus.x, y:plus.y, z:size});
+					Bs.push({x:plus.x, y:plus.y, z:-size});
+					Cs.push({x:minus.x, y:minus.y, z:-size});
+					Ds.push({x:minus.x, y:minus.y, z:size});
+					prev = point;
+				}
+			} else {
+				prev = point;
+			}
 		});
-        
-        draw.resetCurrentVector();        
-        for (var i=Bs.length-1; i >= 0; --i){ // comb B on top of A
-            draw.appendCurrentVector(Bs[i]);
-            draw.appendCurrentVector(As[i]);
-            draw.appendCurrentVector(Bs[i]);
-        }
-        
-        for (var i=0; i < Cs.length; ++i){ // comb C on top of B
-            draw.appendCurrentVector(Cs[i]);
-            draw.appendCurrentVector(Bs[i]);
-            draw.appendCurrentVector(Cs[i]);
-        }
-        
-        for (var i=Ds.length-1; i >= 0; --i){ // comb D on top of C
-            draw.appendCurrentVector(Ds[i]);
-            draw.appendCurrentVector(Cs[i]);
-            draw.appendCurrentVector(Ds[i]);
-        }
-        
-        for (var i=0; i < Cs.length; ++i){ // comb A on top of D
-            draw.appendCurrentVector(As[i]);
-            draw.appendCurrentVector(Ds[i]);
-            draw.appendCurrentVector(As[i]);
-        }
+		
+		draw.resetCurrentVector();
+		for (var i=Bs.length-1; i >= 0; --i){ // comb B on top of A
+			draw.appendCurrentVector(Bs[i]);
+			draw.appendCurrentVector(As[i]);
+			draw.appendCurrentVector(Bs[i]);
+		}
+		
+		for (var i=0; i < Cs.length; ++i){ // comb C on top of B
+			draw.appendCurrentVector(Cs[i]);
+			draw.appendCurrentVector(Bs[i]);
+			draw.appendCurrentVector(Cs[i]);
+		}
+		
+		for (var i=Ds.length-1; i >= 0; --i){ // comb D on top of C
+			draw.appendCurrentVector(Ds[i]);
+			draw.appendCurrentVector(Cs[i]);
+			draw.appendCurrentVector(Ds[i]);
+		}
+		
+		for (var i=0; i < Cs.length; ++i){ // comb A on top of D
+			draw.appendCurrentVector(As[i]);
+			draw.appendCurrentVector(Ds[i]);
+			draw.appendCurrentVector(As[i]);
+		}
 		
 		draw.commitCurrentVector();
 		draw.resetCurrentVector();
