@@ -551,31 +551,36 @@ draw.addClearingTool("Duct", "3D Tools", function(){
         var size = 20;
 		draw.iterateCurrentVector(function(point){
             if (prev){
-                var prev2point = {
-                    x: point.x - prev.x,
-                    y: point.y - prev.y
-                };
-                var perp = {x: prev2point.y, y: -prev2point.x};
-                // size = Math.sqrt(t*perp.x*t*perp.x + t*perp.y*t*perp.y)
-                // size*size = t*perp.x*t*perp.x + t*perp.y*t*perp.y
-                // size*size = t*t*(perp.x*perp.x + perp.y*perp.y)
-                // size*size/(perp.x*perp.x + perp.y*perp.y) = t*t
-                // Math.sqrt(size*size/(perp.x*perp.x + perp.y*perp.y)) = t
-                var t = Math.sqrt(size*size/(perp.x*perp.x + perp.y*perp.y));
-                var plus = {
-                    x: prev.x + t*perp.x,
-                    y: prev.y + t*perp.y
-                };
-                var minus = {
-                    x: prev.x - t*perp.x,
-                    y: prev.y - t*perp.y
-                };
-                As.push({x:plus.x, y:plus.y, z:size});
-                Bs.push({x:plus.x, y:plus.y, z:-size});
-                Cs.push({x:minus.x, y:minus.y, z:-size});
-                Ds.push({x:minus.x, y:minus.y, z:size});
+                var dist = Math.sqrt((point.x-prev.x)*(point.x-prev.x) + (point.y-prev.y)*(point.y-prev.y));
+                if (dist >= size/2){
+                    var prev2point = {
+                        x: point.x - prev.x,
+                        y: point.y - prev.y
+                    };
+                    var perp = {x: prev2point.y, y: -prev2point.x};
+                    // size = Math.sqrt(t*perp.x*t*perp.x + t*perp.y*t*perp.y)
+                    // size*size = t*perp.x*t*perp.x + t*perp.y*t*perp.y
+                    // size*size = t*t*(perp.x*perp.x + perp.y*perp.y)
+                    // size*size/(perp.x*perp.x + perp.y*perp.y) = t*t
+                    // Math.sqrt(size*size/(perp.x*perp.x + perp.y*perp.y)) = t
+                    var t = Math.sqrt(size*size/(perp.x*perp.x + perp.y*perp.y));
+                    var plus = {
+                        x: prev.x + t*perp.x,
+                        y: prev.y + t*perp.y
+                    };
+                    var minus = {
+                        x: prev.x - t*perp.x,
+                        y: prev.y - t*perp.y
+                    };
+                    As.push({x:plus.x, y:plus.y, z:size});
+                    Bs.push({x:plus.x, y:plus.y, z:-size});
+                    Cs.push({x:minus.x, y:minus.y, z:-size});
+                    Ds.push({x:minus.x, y:minus.y, z:size});
+                    prev = point;
+                }
+            } else {
+                prev = point;
             }
-            prev = point;
 		});
         
         draw.resetCurrentVector();        
