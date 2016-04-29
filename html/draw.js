@@ -286,7 +286,7 @@ var draw = (function(){
 			points = projectedXYPoints(gl, points, pencil.xref, pencil.yref, pencil.eye);
 			points = normalizeAbsolutePoints(gl, points);
 			all_points = all_points.concat(points);
-			all_points.push({x: Infinity, y: Infinity, z: Infinity});
+			all_points.push({x: 0, y: 0, z: Infinity});
 			if (all_points.length >= 3000){
 				drawLineStripRgba(gl, all_points, 0, 0, 0, 1);
 				all_points = [];
