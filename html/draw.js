@@ -277,7 +277,7 @@ var draw = (function(){
 		var all_points = [];
 		for (var i in vectors){
 			points = vectors[i];
-			points = fill4DPoints(points);
+			//points = fill4DPoints(points);
 			points = projectedXYPoints(gl, points, pencil.xref, pencil.yref, pencil.eye);
 			points = normalizeAbsolutePoints(gl, points);
 			all_points = all_points.concat(points);
@@ -293,7 +293,7 @@ var draw = (function(){
 			all_points = [];
 			for (var i in selection){
 				points = selection[i];
-				points = fill4DPoints(points);
+				//points = fill4DPoints(points);
 				points = projectedXYPoints(gl, points, pencil.xref, pencil.yref, pencil.eye);
 				points = normalizeAbsolutePoints(gl, points);
 				all_points = all_points.concat(points);
