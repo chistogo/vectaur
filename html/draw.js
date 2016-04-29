@@ -668,6 +668,88 @@ draw.addClearingTool("Duct", "3D Tools", function(){
 	}
 });
 
+draw.addClearingTool("Cubeline", "3D Tools", function(){
+	if (draw.pencil.active){
+		draw.appendCurrentVector({x: draw.pencil.xpos, y: draw.pencil.ypos});
+		draw.mostRecent();
+	} else if (draw.pencil.xmove || draw.pencil.ymove){
+		var As=[], Bs=[], Cs=[], Ds=[];
+        var Es=[], Fs=[], Gs=[], Hs=[];
+		var prev=false;
+		var size = 20;
+		draw.iterateCurrentVector(function(point){
+			if (prev){
+				var dist = Math.sqrt((point.x-prev.x)*(point.x-prev.x) + (point.y-prev.y)*(point.y-prev.y));
+				if (dist >= size/2){
+					var prev2point = {
+						x: point.x - prev.x,
+						y: point.y - prev.y
+					};
+					var perp = {x: prev2point.y, y: -prev2point.x};
+					// size = Math.sqrt(t*perp.x*t*perp.x + t*perp.y*t*perp.y)
+					// size*size = t*perp.x*t*perp.x + t*perp.y*t*perp.y
+					// size*size = t*t*(perp.x*perp.x + perp.y*perp.y)
+					// size*size/(perp.x*perp.x + perp.y*perp.y) = t*t
+					// Math.sqrt(size*size/(perp.x*perp.x + perp.y*perp.y)) = t
+					var t = Math.sqrt(size*size/(perp.x*perp.x + perp.y*perp.y));
+					var A = {
+						x: prev.x + t*perp.x,
+						y: prev.y + t*perp.y
+					};
+					var B = {
+						x: prev.x - t*perp.x,
+						y: prev.y - t*perp.y
+					};
+                    var C = {
+                        x: B.x + prev2point.x,
+                        y: B.y + prev2point.y
+                    };
+                    var D = {
+                        x: A.x + prev2point.x,
+                        y: A.y + prev2point.y
+                    };
+					As.push({x:A.x, y:A.y, z:size});
+					Bs.push({x:B.x, y:B.y, z:size});
+					Cs.push({x:C.x, y:C.y, z:size});
+					Ds.push({x:D.x, y:D.y, z:size});
+                    Es.push({x:A.x, y:A.y, z:-size});
+					Fs.push({x:B.x, y:B.y, z:-size});
+					Gs.push({x:C.x, y:C.y, z:-size});
+					Hs.push({x:D.x, y:D.y, z:-size});
+					prev = point;
+				}
+			} else {
+				prev = point;
+			}
+		});
+		
+		draw.resetCurrentVector();
+        for (var i=0; i < As.length; ++i){
+            draw.appendCurrentVector(As[i]);
+            draw.appendCurrentVector(Bs[i]);
+            draw.appendCurrentVector(Cs[i]);
+            draw.appendCurrentVector(Ds[i]);
+            draw.appendCurrentVector(As[i]);
+            draw.appendCurrentVector(Es[i]);
+            draw.appendCurrentVector(Fs[i]);
+            draw.appendCurrentVector(Bs[i]);
+            draw.appendCurrentVector(Fs[i]);
+            draw.appendCurrentVector(Gs[i]);
+            draw.appendCurrentVector(Cs[i]);
+            draw.appendCurrentVector(Gs[i]);
+            draw.appendCurrentVector(Hs[i]);
+            draw.appendCurrentVector(Ds[i]);
+            draw.appendCurrentVector(Hs[i]);
+            draw.appendCurrentVector(Es[i]);
+            draw.appendCurrentVector({x:0, y:0, z:Infinity});
+        }
+		draw.commitCurrentVector();
+		draw.resetCurrentVector();
+		draw.clear();
+		draw.redraw();
+	}
+});
+
 draw.addRegularTool("Rotate Z", "3D Tools", function(){
 	draw.resetCurrentVector(); // clean up for multitouch
 	if (draw.pencil.active){
