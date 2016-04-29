@@ -35,13 +35,8 @@ var draw = (function(){
 		state = "draw",
 		touchstate = false,
 		vectors = [],
-		//[[
-		//	{x:1, y:0, z:0}, // this shape records the world transformations
-		//	{x:0, y:1, z:0},
-		//	{x:0, y:0, z:1}
-		//]],
 		current_vector = [],
-		selection = null;
+		selection = false;
 	
 	// These helpers let us add new tools later
 	function addButton(id, cat){
@@ -70,8 +65,8 @@ var draw = (function(){
 		})(id);
 		
 		var button = addButton(id, cat);
-		button.addEventListener("mouseup", fn);
-		button.addEventListener("touchend", fn);
+		button.addEventListener("click", fn);
+		// button.addEventListener("touchend", fn);
 		tools[id.toLowerCase()] = tool_fn;
 	}
 	
@@ -87,8 +82,8 @@ var draw = (function(){
 		})(id);
 		
 		var button = addButton(id, cat);
-		button.addEventListener("mouseup", fn);
-		button.addEventListener("touchend", fn);
+		button.addEventListener("click", fn);
+		// button.addEventListener("touchend", fn);
 		tools[id.toLowerCase()] = tool_fn;
 	}
 	
@@ -99,8 +94,8 @@ var draw = (function(){
 			clearTimeout(button.t);
 			button.t = setTimeout(tool_fn, 100);
 		};
-		button.addEventListener("mouseup", fn);
-		button.addEventListener("touchend", fn);
+		button.addEventListener("click", fn);
+		// button.addEventListener("touchend", fn);
 	}
 	
 	// These helpers are private
@@ -302,7 +297,7 @@ var draw = (function(){
 				points = projectedXYPoints(gl, points, pencil.xref, pencil.yref, pencil.eye);
 				points = normalizeAbsolutePoints(gl, points);
 				all_points = all_points.concat(points);
-				all_points.push({x: Infinity, y: Infinity, z: Infinity});
+				all_points.push({x: 0, y: 0, z: Infinity});
 				if (all_points.length >= 3000){
 					drawLineStripRgba(gl, all_points, 1, 0, 0, 1);
 					all_points = [];
