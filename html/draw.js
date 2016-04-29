@@ -162,7 +162,7 @@ var draw = (function(){
 		
 		if (state === "draw" && typeof e.touches !== "undefined"){
 			if (e.touches.length === 2){
-				touchstate = "rotate";
+				touchstate = "rotate/s";
 				// touchstate = "rotate-scale";
 			} else if (e.touches.length === 3){
 				touchstate = "pan";
