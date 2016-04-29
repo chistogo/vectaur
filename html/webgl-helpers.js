@@ -208,12 +208,12 @@ function normalizeYRelativePoints(gl, points){
 // then no scaling is applied
 function projectedXYPoint(gl, point, refx, refy, refz){
 	var vector = [point.x-refx, point.y-refy, point.z-refz];
-	var t = Infinity;
-    if (point.z < refz){
-        t = refz / vector[2];
+	if (point.z < refz){
+        var t = refz / vector[2];
+        return {z:0, x:refx-t*vector[0], y:refy-t*vector[1]};
+    } else {
+        return {x:0, y:0, z:Infinity};
     }
-    var pp = {z:0, x:refx-t*vector[0], y:refy-t*vector[1]};
-    return pp;
 }
 
 // List version of projectedXYPoint
