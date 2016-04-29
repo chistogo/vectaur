@@ -223,7 +223,7 @@ var draw = (function(){
 	function iterateSelection(fn){
 		var sel = selection || vectors;
 		for (var i in sel){
-			fn(sel[i]);
+			fn(sel[i], !!selection);
 		}
 	}
 	
@@ -514,6 +514,49 @@ draw.addClickTool("Delete", "Actions", function(){
 	draw.redraw();
 });
 
+draw.addClickTool("Join", "Actions", function(){
+	var joined = false;
+	draw.resetCurrentVector();
+	draw.iterateSelection(function(sel, is_sel){
+		if (is_sel){
+			joined = true;
+			for (var i in sel){
+				draw.appendCurrentVector(sel[i]);
+			}
+			draw.appendCurrentVector({x: 0, y: 0, z: Infinity});
+		}
+	});
+
+	if (joined){
+		draw.deleteSelection();
+		draw.commitCurrentVector();
+		draw.clear();
+		draw.redraw();
+		draw.resetCurrentVector();
+	}
+});
+
+draw.addClickTool("Copy", "Actions", function(){
+	var copied = false;
+	draw.resetCurrentVector();
+	draw.iterateSelection(function(sel, is_sel){
+		if (is_sel){
+			copied = true;
+			for (var i in sel){
+				draw.appendCurrentVector({x: sel[i].x+20, y: sel[i].y-20, z: sel[i].z});
+			}
+			draw.appendCurrentVector({x: 0, y: 0, z: Infinity});
+		}
+	});
+
+	if (copied){
+		draw.commitCurrentVector();
+		draw.clear();
+		draw.redraw();
+		draw.resetCurrentVector();
+	}
+});
+
 draw.addClearingTool("Spring", "3D Tools", function(){
 	if (draw.pencil.active){
 		draw.appendCurrentVector({x: draw.pencil.xpos, y: draw.pencil.ypos});
@@ -636,6 +679,7 @@ draw.addRegularTool("Rotate Z", "3D Tools", function(){
 			var yangle = draw.pencil.ymove * Math.PI / 200;
 			draw.iterateSelection(function(sel){
 				for (var i in sel){
+					if (!isFinite(sel[i].z)) continue;
 					sel[i].x -= xref;
 					sel[i].y -= yref;
 					sel[i].z -= zref;
@@ -672,6 +716,7 @@ draw.addRegularTool("Rotate XZ", "3D Tools", function(){
 			var yangle = draw.pencil.ymove * Math.PI / 200;
 			draw.iterateSelection(function(sel){
 				for (var i in sel){
+					if (!isFinite(sel[i].z)) continue;
 					sel[i].x -= xref;
 					sel[i].y -= yref;
 					sel[i].z -= zref;
@@ -704,6 +749,7 @@ draw.addRegularTool("Rotate YZ", "3D Tools", function(){
 			var yangle = draw.pencil.ymove * Math.PI / 200;
 			draw.iterateSelection(function(sel){
 				for (var i in sel){
+					if (!isFinite(sel[i].z)) continue;
 					sel[i].x -= xref;
 					sel[i].y -= yref;
 					sel[i].z -= zref;
@@ -729,6 +775,7 @@ draw.addClickTool("Implode", "Extra", function(){
 	draw.iterateSelection(function(sel){
 		var xavg = 0, yavg = 0, zavg = 0, num = 0;
 		for (var i in sel){
+			if (!isFinite(sel[i].z)) continue;
 			xavg += sel[i].x;
 			yavg += sel[i].y;
 			zavg += sel[i].z;
@@ -738,6 +785,7 @@ draw.addClickTool("Implode", "Extra", function(){
 		yavg /= num;
 		zavg /= num;
 		for (var i in sel){
+			if (!isFinite(sel[i].z)) continue;
 			var x = xavg - sel[i].x;
 			var y = yavg - sel[i].y;
 			var z = zavg - sel[i].z;
@@ -754,6 +802,7 @@ draw.addClickTool("Explode", "Extra", function(){
 	draw.iterateSelection(function(sel){
 		var xavg = 0, yavg = 0, zavg = 0, num = 0;
 		for (var i in sel){
+			if (!isFinite(sel[i].z)) continue;
 			xavg += sel[i].x;
 			yavg += sel[i].y;
 			zavg += sel[i].z;
@@ -763,6 +812,7 @@ draw.addClickTool("Explode", "Extra", function(){
 		yavg /= num;
 		zavg /= num;
 		for (var i in sel){
+			if (!isFinite(sel[i].z)) continue;
 			var x = xavg - sel[i].x;
 			var y = yavg - sel[i].y;
 			var z = zavg - sel[i].z;
@@ -820,5 +870,5 @@ draw.addClickTool("Cube", "3D Tools", function(){
 	draw.commitCurrentVector();
 	draw.clear();
 	draw.redraw();
-	draw.resetCurrentVector
+	draw.resetCurrentVector();
 });
