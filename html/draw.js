@@ -36,7 +36,8 @@ var draw = (function(){
 		touchstate = false,
 		vectors = [],
 		current_vector = [],
-		selection = false;
+		selection = false,
+		key_bindings = {};
 	
 	// These helpers let us add new tools later
 	function addButton(id, cat){
@@ -56,7 +57,7 @@ var draw = (function(){
 		return button;
 	}
 		
-	function addRegularTool(id, cat, tool_fn){
+	function addRegularTool(id, cat, key, tool_fn){
 		var fn = (function(id){
 			return function(){
 				setLocationHash(id.toLowerCase());
@@ -68,9 +69,10 @@ var draw = (function(){
 		button.addEventListener("click", fn);
 		// button.addEventListener("touchend", fn);
 		tools[id.toLowerCase()] = tool_fn;
+		if (key) key_bindings[key] = id.toLowerCase();
 	}
 	
-	function addClearingTool(id, cat, tool_fn){
+	function addClearingTool(id, cat, key, tool_fn){
 		var fn = (function(id){
 			return function(){
 				setLocationHash(id.toLowerCase());
@@ -85,9 +87,10 @@ var draw = (function(){
 		button.addEventListener("click", fn);
 		// button.addEventListener("touchend", fn);
 		tools[id.toLowerCase()] = tool_fn;
+		if (key) key_bindings[key] = id.toLowerCase();
 	}
 	
-	function addClickTool(id, cat, tool_fn){
+	function addClickTool(id, cat, key, tool_fn){
 		var button = addButton(id, cat);
 		button.t = 0;
 		var fn = function(){
@@ -96,6 +99,7 @@ var draw = (function(){
 		};
 		button.addEventListener("click", fn);
 		// button.addEventListener("touchend", fn);
+		if (key) key_bindings[key] = id.toLowerCase();
 	}
 	
 	// These helpers are private
@@ -198,6 +202,21 @@ var draw = (function(){
 		var tip = document.getElementById("tip");
 		tip.innerHTML = ""+pencil.xpos + " / " + pencil.ypos;
 		e.preventDefault();
+	}
+	
+	function _keyer(e){
+		var key = e.keyCode || e.which;
+		console.log(key);
+		if (key in key_bindings){
+			var button = document.getElementById(key_bindings[key]);
+			if (button.fireEvent){
+				button.fireEvent("onclick");
+			} else {
+				var onclick = document.createEvent("Events");
+				onclick.initEvent("click", true, false);
+				button.dispatchEvent(onclick);
+			}
+		}
 	}
 	
 	// These helpers act as a security workaround for chrome's
@@ -324,6 +343,7 @@ var draw = (function(){
 	
 	window.addEventListener("resize", _sizer);
 	window.addEventListener("load", _sizer);
+	window.addEventListener("keypress", _keyer);
 	setLocationHash("draw");
 	pub.pencil = pencil;
 	pub.appendCurrentVector = appendCurrentVector;
@@ -343,7 +363,7 @@ var draw = (function(){
 	return pub;
 })();
 
-draw.addClearingTool("Draw", "Tools", function(){
+draw.addClearingTool("Draw", "Tools", 68, function(){ // 68: shift-D
 	if (draw.pencil.active){
 		draw.appendCurrentVector({x: draw.pencil.xpos, y: draw.pencil.ypos});
 		draw.mostRecent();
@@ -353,7 +373,7 @@ draw.addClearingTool("Draw", "Tools", function(){
 	}
 });
 
-draw.addClearingTool("Line", "Tools", function(){
+draw.addClearingTool("Line", "Tools", 76, function(){ // 76: shift-L
 	if (draw.pencil.active){
 		draw.appendCurrentVector({x: draw.pencil.xpos, y: draw.pencil.ypos});
 		draw.mostRecent();
@@ -395,7 +415,7 @@ draw.addClearingTool("Line", "Tools", function(){
 	}
 });
 
-draw.addRegularTool("Rotate/S", "Tools", function(){
+draw.addRegularTool("Rotate/S", "Tools", 82, function(){ // 82: shift-R
 	draw.resetCurrentVector(); // clean up for multitouch
 	if (draw.pencil.active){
 		if (draw.pencil.xmove || draw.pencil.ymove){
@@ -426,7 +446,7 @@ draw.addRegularTool("Rotate/S", "Tools", function(){
 	}
 });
 
-draw.addRegularTool("Stretch", "Tools", function(){
+draw.addRegularTool("Stretch", "Tools", 83, function(){ // 83: shift-S
 	draw.resetCurrentVector(); // clean up for multitouch
 	if (draw.pencil.active){
 		if (draw.pencil.xmove || draw.pencil.ymove){
@@ -458,7 +478,7 @@ draw.addRegularTool("Stretch", "Tools", function(){
 	}
 });
 
-draw.addRegularTool("Pan", "Tools", function(){
+draw.addRegularTool("Pan", "Tools", 80, function(){ // 80: shift-P
 	draw.resetCurrentVector(); // clean up for multitouch
 	if (draw.pencil.active){
 		if (draw.pencil.xmove || draw.pencil.ymove){
@@ -477,7 +497,7 @@ draw.addRegularTool("Pan", "Tools", function(){
 	}
 });
 
-draw.addRegularTool("Select", "Tools", function(){
+draw.addRegularTool("Select", "Tools", 69, function(){ // shift-E
 	if (draw.pencil.active){
 		if (draw.pencil.xmove || draw.pencil.ymove){
 			var xprev = draw.pencil.xpos - draw.pencil.xmove;
@@ -493,7 +513,7 @@ draw.addRegularTool("Select", "Tools", function(){
 	}
 });
 
-draw.addRegularTool("Origin", "Tools", function(){
+draw.addRegularTool("Origin", "Tools", 79, function(){ // 79: shift-O
 	if (draw.pencil.active){
 		if (draw.pencil.xmove || draw.pencil.ymove){
 			draw.pencil.xref = draw.pencil.xpos;
@@ -504,17 +524,17 @@ draw.addRegularTool("Origin", "Tools", function(){
 	}
 });
 
-draw.addClickTool("Save", "Actions", function(){
+draw.addClickTool("Export", "Actions", 88, function(){ // 88: shift-x
 	window.open(draw.toDataURL(), "_blank");
 });
 
-draw.addClickTool("Delete", "Actions", function(){
+draw.addClickTool("Delete", "Actions", 127, function(){ // 127: del
 	draw.deleteSelection();
 	draw.clear();
 	draw.redraw();
 });
 
-draw.addClickTool("Join", "Actions", function(){
+draw.addClickTool("Join", "Actions", 74, function(){ // 74: shift-J
 	var joined = false;
 	draw.resetCurrentVector();
 	draw.iterateSelection(function(sel, is_sel){
@@ -536,7 +556,7 @@ draw.addClickTool("Join", "Actions", function(){
 	}
 });
 
-draw.addClickTool("Copy", "Actions", function(){
+draw.addClickTool("Copy", "Actions", 67, function(){ // 67: shift-C
 	var copied = false;
 	draw.resetCurrentVector();
 	draw.iterateSelection(function(sel, is_sel){
@@ -557,7 +577,7 @@ draw.addClickTool("Copy", "Actions", function(){
 	}
 });
 
-draw.addClearingTool("Spring", "3D Tools", function(){
+draw.addClearingTool("Spring", "3D Tools", 71, function(){ // 71: shift-G
 	if (draw.pencil.active){
 		draw.appendCurrentVector({x: draw.pencil.xpos, y: draw.pencil.ypos});
 		draw.mostRecent();
@@ -574,7 +594,7 @@ draw.addClearingTool("Spring", "3D Tools", function(){
 	}
 });
 
-draw.addClearingTool("Fence", "3D Tools", function(){
+draw.addClearingTool("Fence", "3D Tools", 70, function(){ // 70: shift-F
 	if (draw.pencil.active){
 		draw.appendCurrentVector({x: draw.pencil.xpos, y: draw.pencil.ypos});
 		draw.mostRecent();
@@ -594,7 +614,7 @@ draw.addClearingTool("Fence", "3D Tools", function(){
 	}
 });
 
-draw.addClearingTool("Duct", "3D Tools", function(){
+draw.addClearingTool("Duct", "3D Tools", 84, function(){ // 84: shift-T
 	if (draw.pencil.active){
 		draw.appendCurrentVector({x: draw.pencil.xpos, y: draw.pencil.ypos});
 		draw.mostRecent();
@@ -668,13 +688,13 @@ draw.addClearingTool("Duct", "3D Tools", function(){
 	}
 });
 
-draw.addClearingTool("Cubeline", "3D Tools", function(){
+draw.addClearingTool("Cubeline", "3D Tools", 66, function(){ // 66: shift-B
 	if (draw.pencil.active){
 		draw.appendCurrentVector({x: draw.pencil.xpos, y: draw.pencil.ypos});
 		draw.mostRecent();
 	} else if (draw.pencil.xmove || draw.pencil.ymove){
 		var As=[], Bs=[], Cs=[], Ds=[];
-        var Es=[], Fs=[], Gs=[], Hs=[];
+		var Es=[], Fs=[], Gs=[], Hs=[];
 		var prev=false;
 		var size = 20;
 		draw.iterateCurrentVector(function(point){
@@ -700,19 +720,19 @@ draw.addClearingTool("Cubeline", "3D Tools", function(){
 						x: prev.x - t*perp.x,
 						y: prev.y - t*perp.y
 					};
-                    var C = {
-                        x: B.x + prev2point.x,
-                        y: B.y + prev2point.y
-                    };
-                    var D = {
-                        x: A.x + prev2point.x,
-                        y: A.y + prev2point.y
-                    };
+					var C = {
+						x: B.x + prev2point.x,
+						y: B.y + prev2point.y
+					};
+					var D = {
+						x: A.x + prev2point.x,
+						y: A.y + prev2point.y
+					};
 					As.push({x:A.x, y:A.y, z:size});
 					Bs.push({x:B.x, y:B.y, z:size});
 					Cs.push({x:C.x, y:C.y, z:size});
 					Ds.push({x:D.x, y:D.y, z:size});
-                    Es.push({x:A.x, y:A.y, z:-size});
+					Es.push({x:A.x, y:A.y, z:-size});
 					Fs.push({x:B.x, y:B.y, z:-size});
 					Gs.push({x:C.x, y:C.y, z:-size});
 					Hs.push({x:D.x, y:D.y, z:-size});
@@ -724,25 +744,25 @@ draw.addClearingTool("Cubeline", "3D Tools", function(){
 		});
 		
 		draw.resetCurrentVector();
-        for (var i=0; i < As.length; ++i){
-            draw.appendCurrentVector(As[i]);
-            draw.appendCurrentVector(Bs[i]);
-            draw.appendCurrentVector(Cs[i]);
-            draw.appendCurrentVector(Ds[i]);
-            draw.appendCurrentVector(As[i]);
-            draw.appendCurrentVector(Es[i]);
-            draw.appendCurrentVector(Fs[i]);
-            draw.appendCurrentVector(Bs[i]);
-            draw.appendCurrentVector(Fs[i]);
-            draw.appendCurrentVector(Gs[i]);
-            draw.appendCurrentVector(Cs[i]);
-            draw.appendCurrentVector(Gs[i]);
-            draw.appendCurrentVector(Hs[i]);
-            draw.appendCurrentVector(Ds[i]);
-            draw.appendCurrentVector(Hs[i]);
-            draw.appendCurrentVector(Es[i]);
-            draw.appendCurrentVector({x:0, y:0, z:Infinity});
-        }
+		for (var i=0; i < As.length; ++i){
+			draw.appendCurrentVector(As[i]);
+			draw.appendCurrentVector(Bs[i]);
+			draw.appendCurrentVector(Cs[i]);
+			draw.appendCurrentVector(Ds[i]);
+			draw.appendCurrentVector(As[i]);
+			draw.appendCurrentVector(Es[i]);
+			draw.appendCurrentVector(Fs[i]);
+			draw.appendCurrentVector(Bs[i]);
+			draw.appendCurrentVector(Fs[i]);
+			draw.appendCurrentVector(Gs[i]);
+			draw.appendCurrentVector(Cs[i]);
+			draw.appendCurrentVector(Gs[i]);
+			draw.appendCurrentVector(Hs[i]);
+			draw.appendCurrentVector(Ds[i]);
+			draw.appendCurrentVector(Hs[i]);
+			draw.appendCurrentVector(Es[i]);
+			draw.appendCurrentVector({x:0, y:0, z:Infinity});
+		}
 		draw.commitCurrentVector();
 		draw.resetCurrentVector();
 		draw.clear();
@@ -750,7 +770,7 @@ draw.addClearingTool("Cubeline", "3D Tools", function(){
 	}
 });
 
-draw.addRegularTool("Rotate Z", "3D Tools", function(){
+draw.addRegularTool("Rotate Z", "3D Tools", 81, function(){ // 81: shift-Q
 	draw.resetCurrentVector(); // clean up for multitouch
 	if (draw.pencil.active){
 		if (draw.pencil.xmove || draw.pencil.ymove){
@@ -787,7 +807,7 @@ draw.addRegularTool("Rotate Z", "3D Tools", function(){
 	}
 });
 
-draw.addRegularTool("Rotate XZ", "3D Tools", function(){
+draw.addRegularTool("Rotate XZ", "3D Tools", 65, function(){ // 65: shift-A
 	draw.resetCurrentVector(); // clean up for multitouch
 	if (draw.pencil.active){
 		if (draw.pencil.xmove || draw.pencil.ymove){
@@ -820,7 +840,7 @@ draw.addRegularTool("Rotate XZ", "3D Tools", function(){
 	}
 });
 
-draw.addRegularTool("Rotate YZ", "3D Tools", function(){
+draw.addRegularTool("Rotate YZ", "3D Tools", 90, function(){ // 90: shift-Z
 	draw.resetCurrentVector(); // clean up for multitouch
 	if (draw.pencil.active){
 		if (draw.pencil.xmove || draw.pencil.ymove){
@@ -853,7 +873,7 @@ draw.addRegularTool("Rotate YZ", "3D Tools", function(){
 	}
 });
 
-draw.addClickTool("Implode", "Extra", function(){
+draw.addClickTool("Implode", "Extra", 123, function(){ // 123: shift-{
 	draw.iterateSelection(function(sel){
 		var xavg = 0, yavg = 0, zavg = 0, num = 0;
 		for (var i in sel){
@@ -880,7 +900,7 @@ draw.addClickTool("Implode", "Extra", function(){
 	draw.redraw();
 });
 
-draw.addClickTool("Explode", "Extra", function(){
+draw.addClickTool("Explode", "Extra", 125, function(){ // 125: shift-}
 	draw.iterateSelection(function(sel){
 		var xavg = 0, yavg = 0, zavg = 0, num = 0;
 		for (var i in sel){
@@ -907,7 +927,7 @@ draw.addClickTool("Explode", "Extra", function(){
 	draw.redraw();
 });
 
-draw.addClickTool("Raise", "3D Tools", function(){
+draw.addClickTool("Raise", "3D Tools", 43, function(){ // 43: shift-plus
 	draw.iterateSelection(function(sel){
 		for (var i in sel){
 			sel[i].z += 10;
@@ -917,7 +937,7 @@ draw.addClickTool("Raise", "3D Tools", function(){
 	draw.redraw();
 });
 
-draw.addClickTool("Lower", "3D Tools", function(){
+draw.addClickTool("Lower", "3D Tools", 95, function(){ // 95: shift-minus
 	draw.iterateSelection(function(sel){
 		for (var i in sel){
 			sel[i].z -= 10;
@@ -927,7 +947,7 @@ draw.addClickTool("Lower", "3D Tools", function(){
 	draw.redraw();
 });
 
-draw.addClickTool("Cube", "3D Tools", function(){
+draw.addClickTool("Cube", "3D Tools", 41, function(){ // 41: shift-zero
 	var size = 50;
 	var x = Math.random()*4*size-2*size + draw.pencil.xref;
 	var y = Math.random()*4*size-2*size + draw.pencil.yref;
