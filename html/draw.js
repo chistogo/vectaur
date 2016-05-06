@@ -1,5 +1,5 @@
-"use strict";
-
+"use strict"; //Force New ES6
+//Sets URL HASH for the Blue selection thing 
 function setLocationHash(hash){
 	var e = document.getElementById("buttons");
 	if (e){
@@ -10,6 +10,8 @@ function setLocationHash(hash){
 		location.hash = hash;
 	}
 }
+
+//This is where the magic happens
 
 var draw = (function(){
 	var canvas = document.getElementById("canvas");
@@ -30,7 +32,7 @@ var draw = (function(){
 			yscale: 1,
 			xref: 600,
 			yref: 325,
-			eye: 900,
+			eye: 900
 		},
 		state = "draw",
 		touchstate = false,
@@ -77,7 +79,7 @@ var draw = (function(){
 			return function(){
 				setLocationHash(id.toLowerCase());
 				state = id.toLowerCase();
-				selection = null;
+				selection = false;
 				clearCanvas(gl);
 				redraw();
 			};
@@ -206,7 +208,6 @@ var draw = (function(){
 	
 	function _keyer(e){
 		var key = e.keyCode || e.which;
-		console.log(key);
 		if (key in key_bindings){
 			var button = document.getElementById(key_bindings[key]);
 			if (button.fireEvent){
@@ -217,6 +218,7 @@ var draw = (function(){
 				button.dispatchEvent(onclick);
 			}
 		}
+		console.log(key);
 	}
 	
 	// These helpers act as a security workaround for chrome's
